@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>ARDK — Stock</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--rouge:#C8102E;--rouge-fonce:#8B0A1E;--or:#D4A843;--noir:#1A1209;--gris:#F2EDE6;--sidebar-w:240px;}
+    *{margin:0;padding:0;box-sizing:border-box;}html,body{height:100%;}
+    body{font-family:'DM Sans',sans-serif;background:var(--gris);display:flex;height:100vh;overflow:hidden;color:var(--noir);}
+    .sidebar{width:var(--sidebar-w);background:var(--noir);height:100vh;position:fixed;left:0;top:0;display:flex;flex-direction:column;z-index:100;overflow-y:auto;}
+    .sidebar-logo{padding:24px 20px 18px;border-bottom:1px solid rgba(255,255,255,0.08);}
+    .sidebar-logo h1{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;color:white;}
+    .sidebar-logo h1 span{color:var(--or);}
+    .sidebar-logo p{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-top:3px;}
+    .sidebar-user{padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px;}
+    .user-avatar{width:34px;height:34px;background:var(--rouge);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;flex-shrink:0;}
+    .user-info p{font-size:13px;color:white;font-weight:500;}.user-info span{font-size:11px;color:rgba(255,255,255,0.4);}
+    .sidebar-nav{flex:1;padding:10px 0;}
+    .nav-section{padding:8px 20px 3px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.22);}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;color:rgba(255,255,255,0.5);font-size:13px;text-decoration:none;border-left:3px solid transparent;transition:all 0.2s;}
+    .nav-item:hover{background:rgba(255,255,255,0.05);color:white;}
+    .nav-item.active{background:rgba(200,16,46,0.15);color:white;border-left-color:var(--rouge);}
+    .nav-item .icon{font-size:14px;width:18px;text-align:center;}
+    .sidebar-footer{padding:14px 20px;border-top:1px solid rgba(255,255,255,0.08);}
+    .btn-logout{width:100%;padding:9px;background:rgba(200,16,46,0.12);color:rgba(255,255,255,0.55);border:1px solid rgba(200,16,46,0.25);border-radius:8px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+    .btn-logout:hover{background:var(--rouge);color:white;}
+    .main{margin-left:var(--sidebar-w);flex:1;padding:26px 28px;overflow-y:auto;height:100vh;}
+    .page-header{margin-bottom:22px;}.page-header h2{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;}
+    .or-line{display:inline-block;width:26px;height:2px;background:var(--or);border-radius:1px;vertical-align:middle;margin-right:8px;}
+    .card{background:white;border-radius:12px;padding:22px;margin-bottom:18px;}
+    .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+    .card-header h3{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;}
+    .btn-primary{padding:8px 16px;background:var(--rouge);color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+    .btn-primary:hover{background:var(--rouge-fonce);}
+    table{width:100%;border-collapse:collapse;}
+    thead th{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#BBB;font-weight:500;padding:7px 10px;text-align:left;border-bottom:1px solid #F0EBE3;}
+    tbody td{padding:10px;font-size:13px;border-bottom:1px solid #F7F4F0;}
+    tbody tr:last-child td{border-bottom:none;}tbody tr:hover td{background:#FDFAF6;}
+    .badge{font-size:11px;padding:2px 9px;border-radius:20px;font-weight:500;}
+    .badge-rouge{background:rgba(200,16,46,0.1);color:var(--rouge);}.badge-or{background:rgba(212,168,67,0.15);color:#A07820;}
+    .badge-vert{background:rgba(34,197,94,0.1);color:#16A34A;}.badge-bleu{background:rgba(59,130,246,0.1);color:#2563EB;}.badge-gris{background:#F3F4F6;color:#6B7280;}
+    .empty{text-align:center;padding:28px;color:#CCC;font-size:13px;}
+    .btn-action{padding:4px 10px;border-radius:5px;border:none;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;margin-right:3px;}
+    .form-group{margin-bottom:14px;}.form-group label{display:block;font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:#999;margin-bottom:5px;}
+    .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:1.5px solid #E8E0D5;border-radius:7px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--noir);outline:none;background:#FDFAF6;}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--rouge);}
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;}
+    .modal-overlay.show{display:flex;}
+    .modal-box{background:white;border-radius:14px;padding:26px;width:440px;max-width:95vw;max-height:88vh;overflow-y:auto;}
+    .modal-box h3{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-bottom:18px;}
+    .modal-actions{display:flex;gap:8px;margin-top:18px;justify-content:flex-end;}
+    .btn-cancel{padding:8px 16px;background:#F2EDE6;color:#888;border:none;border-radius:7px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+
+    /* TABS */
+    .tabs{display:flex;gap:4px;margin-bottom:20px;background:white;padding:6px;border-radius:12px;flex-wrap:wrap;}
+    .tab-btn{padding:8px 16px;border:none;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;color:#888;background:transparent;transition:all 0.2s;white-space:nowrap;}
+    .tab-btn.active{background:var(--rouge);color:white;}
+    .tab-btn:hover:not(.active){background:var(--gris);color:var(--noir);}
+    .tab-panel{display:none;}.tab-panel.active{display:block;}
+  </style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-logo"><h1>ARDK<span>.</span></h1><p>Production MES</p></div>
+  <div class="sidebar-user"><div class="user-avatar" id="userAvatar">A</div><div class="user-info"><p id="userName">—</p><span id="userRole">—</span></div></div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Principal</div>
+    <a class="nav-item" href="dashboard.html"><span class="icon">📊</span> Dashboard</a>
+    <a class="nav-item" href="ordres.html"><span class="icon">⚙️</span> Ordres fab.</a>
+    <a class="nav-item" href="articles.html"><span class="icon">📦</span> Articles</a>
+    <a class="nav-item" href="gammes.html"><span class="icon">🔧</span> Gammes</a>
+    <a class="nav-item" href="nomenclatures.html"><span class="icon">📋</span> Nomenclatures</a>
+    <a class="nav-item" href="operations.html"><span class="icon">⚡</span> Opérations</a>
+    <div class="nav-section">Gestion</div>
+    <a class="nav-item" href="ateliers.html"><span class="icon">🏭</span> Ateliers</a>
+    <a class="nav-item" href="artisans.html"><span class="icon">👷</span> Artisans</a>
+    <a class="nav-item" href="postes.html"><span class="icon">🖥️</span> Postes travail</a>
+    <a class="nav-item" href="calendrier.html"><span class="icon">📅</span> Calendrier</a>
+    <a class="nav-item active" href="stock.html"><span class="icon">🗃️</span> Stock</a>
+    <div class="nav-section">Qualité</div>
+    <a class="nav-item" href="qualite.html"><span class="icon">✅</span> Contrôle qualité</a>
+    <a class="nav-item" href="declarations.html"><span class="icon">📝</span> Déclarations</a>
+    <div class="nav-section">Admin</div>
+    <a class="nav-item" href="utilisateurs.html"><span class="icon">👤</span> Utilisateurs</a>
+  </nav>
+  <div class="sidebar-footer"><button class="btn-logout" onclick="logout()">← Déconnexion</button></div>
+</aside>
+
+<main class="main">
+  <div class="page-header"><h2><span class="or-line"></span>Stock<span style="color:var(--rouge)">.</span></h2></div>
+
+  <!-- TABS NAV -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('stocks')">🗃️ Stocks</button>
+    <button class="tab-btn" onclick="switchTab('lignes-stock')">📋 Lignes stock</button>
+    <button class="tab-btn" onclick="switchTab('entrees')">📥 Entrées</button>
+    <button class="tab-btn" onclick="switchTab('lignes-entree')">📄 Lignes entrée</button>
+    <button class="tab-btn" onclick="switchTab('sorties')">📤 Sorties</button>
+    <button class="tab-btn" onclick="switchTab('lignes-sortie')">📄 Lignes sortie</button>
+  </div>
+
+  <!-- ========================= TAB: STOCKS ========================= -->
+  <div class="tab-panel active" id="tab-stocks">
+    <div class="card">
+      <div class="card-header"><h3>Stocks (par atelier)</h3><button class="btn-primary" onclick="openStockForm()">+ Ajouter stock</button></div>
+      <table><thead><tr><th>#</th><th>Atelier</th><th>Seuil alerte</th><th>Date MAJ</th><th>Actions</th></tr></thead>
+      <tbody id="tbody-stocks"><tr><td colspan="5" class="empty">Chargement...</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- ========================= TAB: LIGNES STOCK ========================= -->
+  <div class="tab-panel" id="tab-lignes-stock">
+    <div class="card">
+      <div class="card-header"><h3>Lignes stock</h3><button class="btn-primary" onclick="openLigneStockForm()">+ Ajouter ligne</button></div>
+      <table><thead><tr><th>Article</th><th>Qté disponible</th><th>Qté réservée</th><th>Emplacement</th><th>Seuil alerte</th><th>État</th><th>Actions</th></tr></thead>
+      <tbody id="tbody-lignes-stock"><tr><td colspan="7" class="empty">Chargement...</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- ========================= TAB: ENTRÉES ========================= -->
+  <div class="tab-panel" id="tab-entrees">
+    <div class="card">
+      <div class="card-header"><h3>Entrées stock</h3><button class="btn-primary" onclick="openEntreeForm()">+ Ajouter entrée</button></div>
+      <table><thead><tr><th>#</th><th>Date entrée</th><th>Type</th><th>Stock</th><th>Actions</th></tr></thead>
+      <tbody id="tbody-entrees"><tr><td colspan="5" class="empty">Chargement...</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- ========================= TAB: LIGNES ENTRÉE ========================= -->
+  <div class="tab-panel" id="tab-lignes-entree">
+    <div class="card">
+      <div class="card-header"><h3>Lignes entrée</h3><button class="btn-primary" onclick="openLigneEntreeForm()">+ Ajouter ligne</button></div>
+      <table><thead><tr><th>#</th><th>Entrée #</th><th>Article</th><th>Quantité</th><th>Unité</th><th>Actions</th></tr></thead>
+      <tbody id="tbody-lignes-entree"><tr><td colspan="6" class="empty">Chargement...</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- ========================= TAB: SORTIES ========================= -->
+  <div class="tab-panel" id="tab-sorties">
+    <div class="card">
+      <div class="card-header"><h3>Sorties stock</h3><button class="btn-primary" onclick="openSortieForm()">+ Ajouter sortie</button></div>
+      <table><thead><tr><th>#</th><th>Date sortie</th><th>Type</th><th>Stock</th><th>Actions</th></tr></thead>
+      <tbody id="tbody-sorties"><tr><td colspan="5" class="empty">Chargement...</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- ========================= TAB: LIGNES SORTIE ========================= -->
+  <div class="tab-panel" id="tab-lignes-sortie">
+    <div class="card">
+      <div class="card-header"><h3>Lignes sortie</h3><button class="btn-primary" onclick="openLigneSortieForm()">+ Ajouter ligne</button></div>
+      <table><thead><tr><th>#</th><th>Sortie #</th><th>Article</th><th>Quantité</th><th>Unité</th><th>Actions</th></tr></thead>
+      <tbody id="tbody-lignes-sortie"><tr><td colspan="6" class="empty">Chargement...</td></tr></tbody></table>
+    </div>
+  </div>
+</main>
+
+<!-- ====== MODALS ====== -->
+
+<!-- Modal Stock -->
+<div class="modal-overlay" id="modal-stock">
+  <div class="modal-box"><h3 id="modal-stock-title">Stock</h3>
+    <input type="hidden" id="s-id"/>
+    <div class="form-group"><label>Atelier</label><select id="s-atelier"><option value="">-- Choisir --</option></select></div>
+    <div class="form-group"><label>Seuil d'alerte</label><input id="s-seuil" type="number" value="0"/></div>
+    <div class="modal-actions"><button class="btn-cancel" onclick="closeModal('modal-stock')">Annuler</button><button class="btn-primary" onclick="saveStock()">Enregistrer</button></div>
+  </div>
+</div>
+
+<!-- Modal Ligne Stock -->
+<div class="modal-overlay" id="modal-ligne-stock">
+  <div class="modal-box"><h3 id="modal-ls-title">Ligne stock</h3>
+    <input type="hidden" id="ls-id"/>
+    <div class="form-group"><label>Article</label><select id="ls-article"><option value="">-- Choisir --</option></select></div>
+    <div class="form-group"><label>Stock</label><select id="ls-stock"><option value="">-- Choisir --</option></select></div>
+    <div class="form-group"><label>Qté disponible</label><input id="ls-qte" type="number" value="0"/></div>
+    <div class="form-group"><label>Qté réservée</label><input id="ls-qter" type="number" value="0"/></div>
+    <div class="form-group"><label>Emplacement</label><input id="ls-emp" type="text"/></div>
+    <div class="modal-actions"><button class="btn-cancel" onclick="closeModal('modal-ligne-stock')">Annuler</button><button class="btn-primary" onclick="saveLigneStock()">Enregistrer</button></div>
+  </div>
+</div>
+
+<!-- Modal Entrée -->
+<div class="modal-overlay" id="modal-entree">
+  <div class="modal-box"><h3>Nouvelle entrée stock</h3>
+    <div class="form-group"><label>Type entrée</label>
+      <select id="e-type">
+        <option value="">-- Choisir --</option>
+        <option value="ACHAT">Achat</option>
+        <option value="RETOUR">Retour</option>
+        <option value="PRODUCTION">Production</option>
+        <option value="TRANSFERT">Transfert</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Stock (atelier)</label><select id="e-stock"><option value="">-- Choisir --</option></select></div>
+    <div class="modal-actions"><button class="btn-cancel" onclick="closeModal('modal-entree')">Annuler</button><button class="btn-primary" onclick="saveEntree()">Enregistrer</button></div>
+  </div>
+</div>
+
+<!-- Modal Ligne Entrée -->
+<div class="modal-overlay" id="modal-ligne-entree">
+  <div class="modal-box"><h3 id="modal-le-title">Ligne entrée</h3>
+    <input type="hidden" id="le-id"/>
+    <div class="form-group"><label>Entrée #</label><select id="le-entree"><option value="">-- Choisir --</option></select></div>
+    <div class="form-group"><label>Article</label><select id="le-article"><option value="">-- Choisir --</option></select></div>
+    <div class="form-group"><label>Quantité</label><input id="le-qte" type="number" value="0"/></div>
+    <div class="form-group"><label>Unité</label><input id="le-unite" type="text" placeholder="kg, pcs, m..."/></div>
+    <div class="modal-actions"><button class="btn-cancel" onclick="closeModal('modal-ligne-entree')">Annuler</button><button class="btn-primary" onclick="saveLigneEntree()">Enregistrer</button></div>
+  </div>
+</div>
+
+<!-- Modal Sortie -->
+<div class="modal-overlay" id="modal-sortie">
+  <div class="modal-box"><h3>Nouvelle sortie stock</h3>
+    <div class="form-group"><label>Type sortie</label>
+      <select id="so-type">
+        <option value="">-- Choisir --</option>
+        <option value="CONSOMMATION">Consommation</option>
+        <option value="TRANSFERT">Transfert</option>
+        <option value="PERTE">Perte</option>
+        <option value="RETOUR">Retour</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Stock (atelier)</label><select id="so-stock"><option value="">-- Choisir --</option></select></div>
+    <div class="modal-actions"><button class="btn-cancel" onclick="closeModal('modal-sortie')">Annuler</button><button class="btn-primary" onclick="saveSortie()">Enregistrer</button></div>
+  </div>
+</div>
+
+<!-- Modal Ligne Sortie -->
+<div class="modal-overlay" id="modal-ligne-sortie">
+  <div class="modal-box"><h3 id="modal-lso-title">Ligne sortie</h3>
+    <input type="hidden" id="lso-id"/>
+    <div class="form-group"><label>Sortie #</label><select id="lso-sortie"><option value="">-- Choisir --</option></select></div>
+    <div class="form-group"><label>Article</label><select id="lso-article"><option value="">-- Choisir --</option></select></div>
+    <div class="form-group"><label>Quantité</label><input id="lso-qte" type="number" value="0"/></div>
+    <div class="form-group"><label>Unité</label><input id="lso-unite" type="text" placeholder="kg, pcs, m..."/></div>
+    <div class="modal-actions"><button class="btn-cancel" onclick="closeModal('modal-ligne-sortie')">Annuler</button><button class="btn-primary" onclick="saveLigneSortie()">Enregistrer</button></div>
+  </div>
+</div>
+
+<script>
+  const API = 'http://localhost:3000/api';
+  const user = JSON.parse(localStorage.getItem('ardk_user') || 'null');
+  if (!user || !user.nom) { window.location.href = 'login.html'; throw new Error('redirect'); }
+  document.getElementById('userAvatar').textContent = (user?.nom || 'U')[0].toUpperCase();
+  document.getElementById('userName').textContent = user?.nom || '—';
+  document.getElementById('userRole').textContent = user?.role || '—';
+  function logout() { localStorage.removeItem('ardk_user'); window.location.href = 'login.html'; }
+  function escH(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function fmt(d) { return d ? new Date(d).toLocaleDateString('fr-FR') : '—'; }
+  function fmtDT(d) { return d ? new Date(d).toLocaleString('fr-FR') : '—'; }
+  function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+  function openModal(id) { document.getElementById(id).classList.add('show'); }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.show').forEach(m => m.classList.remove('show')); });
+
+  // Shared data caches
+  let _ateliers = [], _articles = [], _stocks = [], _entrees = [], _sorties = [];
+
+  async function loadShared() {
+    try {
+      [_ateliers, _articles] = await Promise.all([
+        fetch(`${API}/ateliers`).then(r => r.json()).catch(() => []),
+        fetch(`${API}/articles`).then(r => r.json()).catch(() => [])
+      ]);
+    } catch(e) {}
+  }
+
+  // ======= TABS =======
+  let currentTab = 'stocks';
+  function switchTab(name) {
+    document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    const tabs = ['stocks','lignes-stock','entrees','lignes-entree','sorties','lignes-sortie'];
+    const idx = tabs.indexOf(name);
+    document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+    document.getElementById('tab-' + name).classList.add('active');
+    currentTab = name;
+    loadTab(name);
+  }
+
+  function loadTab(name) {
+    if (name === 'stocks') loadStocks();
+    else if (name === 'lignes-stock') loadLignesStock();
+    else if (name === 'entrees') loadEntrees();
+    else if (name === 'lignes-entree') loadLignesEntree();
+    else if (name === 'sorties') loadSorties();
+    else if (name === 'lignes-sortie') loadLignesSortie();
+  }
+
+  // ======= STOCKS =======
+  async function loadStocks() {
+    try {
+      const data = await fetch(`${API}/stock`).then(r => r.json());
+      _stocks = Array.isArray(data) ? data : [];
+      const atelierMap = {};
+      _ateliers.forEach(a => atelierMap[a.id_atelier] = a.nom);
+      document.getElementById('tbody-stocks').innerHTML = !_stocks.length
+        ? '<tr><td colspan="5" class="empty">Aucun stock enregistré</td></tr>'
+        : _stocks.map(s => `<tr>
+            <td><b>#${s.id_stock}</b></td>
+            <td>${escH(atelierMap[s.id_atelier] || ('Atelier #' + (s.id_atelier || '—')))}</td>
+            <td>${s.seuil_alerte ?? '—'}</td>
+            <td>${fmtDT(s.date_maj)}</td>
+            <td>
+              <button class="btn-action" style="background:rgba(212,168,67,0.1);color:#A07820" onclick="editStock(${s.id_stock},${s.seuil_alerte||0},${s.id_atelier||0})">✏️</button>
+              <button class="btn-action" style="background:rgba(200,16,46,0.1);color:var(--rouge)" onclick="delStock(${s.id_stock})">🗑️</button>
+            </td></tr>`).join('');
+    } catch(e) { document.getElementById('tbody-stocks').innerHTML = '<tr><td colspan="5" class="empty">Erreur de chargement</td></tr>'; }
+  }
+
+  function fillAtelierSelect(selId, val) {
+    const sel = document.getElementById(selId);
+    sel.innerHTML = '<option value="">-- Choisir --</option>' + _ateliers.map(a => `<option value="${a.id_atelier}" ${a.id_atelier==val?'selected':''}>${escH(a.nom)}</option>`).join('');
+  }
+
+  function openStockForm() {
+    document.getElementById('s-id').value = '';
+    document.getElementById('s-seuil').value = 0;
+    fillAtelierSelect('s-atelier', '');
+    document.getElementById('modal-stock-title').textContent = 'Nouveau stock';
+    openModal('modal-stock');
+  }
+  function editStock(id, seuil, idAtelier) {
+    document.getElementById('s-id').value = id;
+    document.getElementById('s-seuil').value = seuil;
+    fillAtelierSelect('s-atelier', idAtelier);
+    document.getElementById('modal-stock-title').textContent = 'Modifier stock #' + id;
+    openModal('modal-stock');
+  }
+  async function saveStock() {
+    const id = document.getElementById('s-id').value;
+    const body = { seuil_alerte: parseFloat(document.getElementById('s-seuil').value) || 0, id_atelier: parseInt(document.getElementById('s-atelier').value) || null };
+    await fetch(`${API}/stock${id ? '/' + id : ''}`, { method: id ? 'PUT' : 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    closeModal('modal-stock');
+    loadStocks();
+  }
+  async function delStock(id) {
+    if (confirm('Supprimer stock #' + id + ' ?')) {
+      await fetch(`${API}/stock/${id}`, { method: 'DELETE' });
+      loadStocks();
+    }
+  }
+
+  // ======= LIGNES STOCK =======
+  async function loadLignesStock() {
+    try {
+      const data = await fetch(`${API}/ligne-stock`).then(r => r.json());
+      document.getElementById('tbody-lignes-stock').innerHTML = !data.length
+        ? '<tr><td colspan="7" class="empty">Aucune ligne stock</td></tr>'
+        : data.map(s => {
+            const low = s.quantite_disponible <= (s.seuil_alerte || 0);
+            return `<tr>
+              <td><b>${escH(s.article_nom || '—')}</b></td>
+              <td>${s.quantite_disponible ?? '—'} ${escH(s.unite_mesure || '')}</td>
+              <td>${s.quantite_reservee ?? 0}</td>
+              <td>${escH(s.emplacement || '—')}</td>
+              <td>${s.seuil_alerte ?? '—'}</td>
+              <td>${low ? '<span class="badge badge-rouge">⚠️ Bas</span>' : '<span class="badge badge-vert">✅ OK</span>'}</td>
+              <td>
+                <button class="btn-action" style="background:rgba(212,168,67,0.1);color:#A07820" onclick="editLigneStock(${s.id_ligne_stock},${s.quantite_disponible||0},${s.quantite_reservee||0},'${escH(s.emplacement||'')}',${s.id_article||0},${s.id_stock||0})">✏️</button>
+                <button class="btn-action" style="background:rgba(200,16,46,0.1);color:var(--rouge)" onclick="delLigneStock(${s.id_ligne_stock})">🗑️</button>
+              </td></tr>`;
+          }).join('');
+    } catch(e) { document.getElementById('tbody-lignes-stock').innerHTML = '<tr><td colspan="7" class="empty">Erreur</td></tr>'; }
+  }
+
+  function fillArticleSelect(selId, val) {
+    const sel = document.getElementById(selId);
+    sel.innerHTML = '<option value="">-- Choisir --</option>' + _articles.map(a => `<option value="${a.id_article}" ${a.id_article==val?'selected':''}>${escH(a.nom)}</option>`).join('');
+  }
+  function fillStockSelect(selId, val) {
+    const sel = document.getElementById(selId);
+    sel.innerHTML = '<option value="">-- Choisir --</option>' + _stocks.map(s => `<option value="${s.id_stock}" ${s.id_stock==val?'selected':''}>Stock #${s.id_stock}</option>`).join('');
+  }
+
+  function openLigneStockForm() {
+    document.getElementById('ls-id').value = '';
+    document.getElementById('ls-qte').value = 0;
+    document.getElementById('ls-qter').value = 0;
+    document.getElementById('ls-emp').value = '';
+    fillArticleSelect('ls-article', '');
+    fillStockSelect('ls-stock', '');
+    document.getElementById('modal-ls-title').textContent = 'Nouvelle ligne stock';
+    openModal('modal-ligne-stock');
+  }
+  function editLigneStock(id, q, qr, emp, idArt, idStock) {
+    document.getElementById('ls-id').value = id;
+    document.getElementById('ls-qte').value = q;
+    document.getElementById('ls-qter').value = qr;
+    document.getElementById('ls-emp').value = emp;
+    fillArticleSelect('ls-article', idArt);
+    fillStockSelect('ls-stock', idStock);
+    document.getElementById('modal-ls-title').textContent = 'Modifier ligne stock';
+    openModal('modal-ligne-stock');
+  }
+  async function saveLigneStock() {
+    const id = document.getElementById('ls-id').value;
+    const body = { quantite_disponible: parseFloat(document.getElementById('ls-qte').value)||0, quantite_reservee: parseFloat(document.getElementById('ls-qter').value)||0, emplacement: document.getElementById('ls-emp').value, id_article: parseInt(document.getElementById('ls-article').value)||null, id_stock: parseInt(document.getElementById('ls-stock').value)||null };
+    await fetch(`${API}/ligne-stock${id?'/'+id:''}`, { method: id?'PUT':'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    closeModal('modal-ligne-stock');
+    loadLignesStock();
+  }
+  async function delLigneStock(id) {
+    if (confirm('Supprimer cette ligne stock ?')) { await fetch(`${API}/ligne-stock/${id}`, {method:'DELETE'}); loadLignesStock(); }
+  }
+
+  // ======= ENTRÉES =======
+  async function loadEntrees() {
+    try {
+      const data = await fetch(`${API}/entree`).then(r => r.json());
+      _entrees = Array.isArray(data) ? data : [];
+      document.getElementById('tbody-entrees').innerHTML = !_entrees.length
+        ? '<tr><td colspan="5" class="empty">Aucune entrée</td></tr>'
+        : _entrees.map(e => `<tr>
+            <td><b>#${e.id_entree}</b></td>
+            <td>${fmtDT(e.date_entree)}</td>
+            <td><span class="badge badge-bleu">${escH(e.type_entree||'—')}</span></td>
+            <td>Stock #${e.id_stock||'—'}</td>
+            <td><button class="btn-action" style="background:rgba(200,16,46,0.1);color:var(--rouge)" onclick="delEntree(${e.id_entree})">🗑️</button></td>
+          </tr>`).join('');
+    } catch(e) { document.getElementById('tbody-entrees').innerHTML = '<tr><td colspan="5" class="empty">Erreur</td></tr>'; }
+  }
+
+  function openEntreeForm() {
+    document.getElementById('e-type').value = '';
+    fillStockSelect('e-stock', '');
+    openModal('modal-entree');
+  }
+  async function saveEntree() {
+    const body = { type_entree: document.getElementById('e-type').value, id_stock: parseInt(document.getElementById('e-stock').value)||null };
+    await fetch(`${API}/entree`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    closeModal('modal-entree');
+    loadEntrees();
+  }
+  async function delEntree(id) {
+    if (confirm('Supprimer entrée #' + id + ' ?')) { await fetch(`${API}/entree/${id}`, {method:'DELETE'}); loadEntrees(); }
+  }
+
+  // ======= LIGNES ENTRÉE =======
+  async function loadLignesEntree() {
+    try {
+      const data = await fetch(`${API}/ligne-entree`).then(r => r.json());
+      document.getElementById('tbody-lignes-entree').innerHTML = !data.length
+        ? '<tr><td colspan="6" class="empty">Aucune ligne entrée</td></tr>'
+        : data.map(l => `<tr>
+            <td>#${l.id_ligne_entree}</td>
+            <td>Entrée #${l.id_entree||'—'}</td>
+            <td>${escH(l.article_nom || ('Article #' + (l.id_article||'—')))}</td>
+            <td>${l.quantite??'—'}</td>
+            <td>${escH(l.unite||'—')}</td>
+            <td>
+              <button class="btn-action" style="background:rgba(212,168,67,0.1);color:#A07820" onclick="editLigneEntree(${l.id_ligne_entree},${l.id_entree||0},${l.id_article||0},${l.quantite||0},'${escH(l.unite||'')}')">✏️</button>
+              <button class="btn-action" style="background:rgba(200,16,46,0.1);color:var(--rouge)" onclick="delLigneEntree(${l.id_ligne_entree})">🗑️</button>
+            </td></tr>`).join('');
+    } catch(e) { document.getElementById('tbody-lignes-entree').innerHTML = '<tr><td colspan="6" class="empty">Erreur</td></tr>'; }
+  }
+
+  function fillEntreeSelect(selId, val) {
+    const sel = document.getElementById(selId);
+    sel.innerHTML = '<option value="">-- Choisir --</option>' + _entrees.map(e => `<option value="${e.id_entree}" ${e.id_entree==val?'selected':''}>Entrée #${e.id_entree} (${escH(e.type_entree||'')})</option>`).join('');
+  }
+
+  function openLigneEntreeForm() {
+    document.getElementById('le-id').value = '';
+    document.getElementById('le-qte').value = 0;
+    document.getElementById('le-unite').value = '';
+    fillEntreeSelect('le-entree', '');
+    fillArticleSelect('le-article', '');
+    document.getElementById('modal-le-title').textContent = 'Nouvelle ligne entrée';
+    openModal('modal-ligne-entree');
+  }
+  function editLigneEntree(id, idE, idA, q, unite) {
+    document.getElementById('le-id').value = id;
+    document.getElementById('le-qte').value = q;
+    document.getElementById('le-unite').value = unite;
+    fillEntreeSelect('le-entree', idE);
+    fillArticleSelect('le-article', idA);
+    document.getElementById('modal-le-title').textContent = 'Modifier ligne entrée';
+    openModal('modal-ligne-entree');
+  }
+  async function saveLigneEntree() {
+    const id = document.getElementById('le-id').value;
+    const body = { id_entree: parseInt(document.getElementById('le-entree').value)||null, id_article: parseInt(document.getElementById('le-article').value)||null, quantite: parseFloat(document.getElementById('le-qte').value)||0, unite: document.getElementById('le-unite').value };
+    await fetch(`${API}/ligne-entree${id?'/'+id:''}`, { method: id?'PUT':'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    closeModal('modal-ligne-entree');
+    loadLignesEntree();
+  }
+  async function delLigneEntree(id) {
+    if (confirm('Supprimer cette ligne ?')) { await fetch(`${API}/ligne-entree/${id}`, {method:'DELETE'}); loadLignesEntree(); }
+  }
+
+  // ======= SORTIES =======
+  async function loadSorties() {
+    try {
+      const data = await fetch(`${API}/sortie`).then(r => r.json());
+      _sorties = Array.isArray(data) ? data : [];
+      document.getElementById('tbody-sorties').innerHTML = !_sorties.length
+        ? '<tr><td colspan="5" class="empty">Aucune sortie</td></tr>'
+        : _sorties.map(s => `<tr>
+            <td><b>#${s.id_sortie}</b></td>
+            <td>${fmtDT(s.date_sortie)}</td>
+            <td><span class="badge badge-or">${escH(s.type_sortie||'—')}</span></td>
+            <td>Stock #${s.id_stock||'—'}</td>
+            <td><button class="btn-action" style="background:rgba(200,16,46,0.1);color:var(--rouge)" onclick="delSortie(${s.id_sortie})">🗑️</button></td>
+          </tr>`).join('');
+    } catch(e) { document.getElementById('tbody-sorties').innerHTML = '<tr><td colspan="5" class="empty">Erreur</td></tr>'; }
+  }
+
+  function openSortieForm() {
+    document.getElementById('so-type').value = '';
+    fillStockSelect('so-stock', '');
+    openModal('modal-sortie');
+  }
+  async function saveSortie() {
+    const body = { type_sortie: document.getElementById('so-type').value, id_stock: parseInt(document.getElementById('so-stock').value)||null };
+    await fetch(`${API}/sortie`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    closeModal('modal-sortie');
+    loadSorties();
+  }
+  async function delSortie(id) {
+    if (confirm('Supprimer sortie #' + id + ' ?')) { await fetch(`${API}/sortie/${id}`, {method:'DELETE'}); loadSorties(); }
+  }
+
+  // ======= LIGNES SORTIE =======
+  async function loadLignesSortie() {
+    try {
+      const data = await fetch(`${API}/ligne-sortie`).then(r => r.json());
+      document.getElementById('tbody-lignes-sortie').innerHTML = !data.length
+        ? '<tr><td colspan="6" class="empty">Aucune ligne sortie</td></tr>'
+        : data.map(l => `<tr>
+            <td>#${l.id_ligne_sortie}</td>
+            <td>Sortie #${l.id_sortie||'—'}</td>
+            <td>${escH(l.article_nom || ('Article #' + (l.id_article||'—')))}</td>
+            <td>${l.quantite??'—'}</td>
+            <td>${escH(l.unite||'—')}</td>
+            <td>
+              <button class="btn-action" style="background:rgba(212,168,67,0.1);color:#A07820" onclick="editLigneSortie(${l.id_ligne_sortie},${l.id_sortie||0},${l.id_article||0},${l.quantite||0},'${escH(l.unite||'')}')">✏️</button>
+              <button class="btn-action" style="background:rgba(200,16,46,0.1);color:var(--rouge)" onclick="delLigneSortie(${l.id_ligne_sortie})">🗑️</button>
+            </td></tr>`).join('');
+    } catch(e) { document.getElementById('tbody-lignes-sortie').innerHTML = '<tr><td colspan="6" class="empty">Erreur</td></tr>'; }
+  }
+
+  function fillSortieSelect(selId, val) {
+    const sel = document.getElementById(selId);
+    sel.innerHTML = '<option value="">-- Choisir --</option>' + _sorties.map(s => `<option value="${s.id_sortie}" ${s.id_sortie==val?'selected':''}>Sortie #${s.id_sortie} (${escH(s.type_sortie||'')})</option>`).join('');
+  }
+
+  function openLigneSortieForm() {
+    document.getElementById('lso-id').value = '';
+    document.getElementById('lso-qte').value = 0;
+    document.getElementById('lso-unite').value = '';
+    fillSortieSelect('lso-sortie', '');
+    fillArticleSelect('lso-article', '');
+    document.getElementById('modal-lso-title').textContent = 'Nouvelle ligne sortie';
+    openModal('modal-ligne-sortie');
+  }
+  function editLigneSortie(id, idS, idA, q, unite) {
+    document.getElementById('lso-id').value = id;
+    document.getElementById('lso-qte').value = q;
+    document.getElementById('lso-unite').value = unite;
+    fillSortieSelect('lso-sortie', idS);
+    fillArticleSelect('lso-article', idA);
+    document.getElementById('modal-lso-title').textContent = 'Modifier ligne sortie';
+    openModal('modal-ligne-sortie');
+  }
+  async function saveLigneSortie() {
+    const id = document.getElementById('lso-id').value;
+    const body = { id_sortie: parseInt(document.getElementById('lso-sortie').value)||null, id_article: parseInt(document.getElementById('lso-article').value)||null, quantite: parseFloat(document.getElementById('lso-qte').value)||0, unite: document.getElementById('lso-unite').value };
+    await fetch(`${API}/ligne-sortie${id?'/'+id:''}`, { method: id?'PUT':'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    closeModal('modal-ligne-sortie');
+    loadLignesSortie();
+  }
+  async function delLigneSortie(id) {
+    if (confirm('Supprimer cette ligne ?')) { await fetch(`${API}/ligne-sortie/${id}`, {method:'DELETE'}); loadLignesSortie(); }
+  }
+
+  // ======= INIT =======
+  async function init() {
+    await loadShared();
+    await loadStocks(); // load stocks first so _stocks is populated
+    loadTab(currentTab);
+  }
+  init();
+</script>
+</body>
+</html>

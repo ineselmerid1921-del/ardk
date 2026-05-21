@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>ARDK — Connexion</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--rouge:#C8102E;--rouge-fonce:#8B0A1E;--or:#D4A843;--noir:#1A1209;--gris:#F2EDE6;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;background:#FAFAF8;}
+    .left{width:55%;background:var(--rouge);position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;min-height:100vh;}
+    .left::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 40px,rgba(255,255,255,0.03) 40px,rgba(255,255,255,0.03) 42px);}
+    .gc{position:absolute;border-radius:50%;border:1px solid rgba(212,168,67,0.25);}
+    .gc1{width:280px;height:280px;top:50%;left:50%;transform:translate(-50%,-50%);}
+    .gc2{width:420px;height:420px;top:50%;left:50%;transform:translate(-50%,-50%);}
+    .gc3{width:560px;height:560px;top:50%;left:50%;transform:translate(-50%,-50%);}
+    .brand{position:relative;z-index:2;text-align:center;color:white;}
+    .brand-logo{font-family:'Playfair Display',serif;font-size:88px;font-weight:900;line-height:1;}
+    .brand-logo::after{content:'';display:block;width:50px;height:3px;background:var(--or);margin:14px auto 0;border-radius:2px;}
+    .brand-tag{margin-top:20px;font-size:12px;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,0.6);}
+    .brand-sub{margin-top:8px;font-family:'Playfair Display',serif;font-size:16px;color:#F0C96A;font-style:italic;}
+    .right{width:45%;display:flex;align-items:center;justify-content:center;padding:50px 44px;position:relative;overflow-y:auto;}
+    .right::before{content:'';position:absolute;left:0;top:10%;bottom:10%;width:1px;background:linear-gradient(to bottom,transparent,var(--or) 50%,transparent);opacity:0.35;}
+    .form-wrap{width:100%;max-width:340px;}
+    .form-header{margin-bottom:36px;}
+    .form-header h2{font-family:'Playfair Display',serif;font-size:30px;font-weight:700;color:var(--noir);}
+    .form-header h2 span{color:var(--rouge);}
+    .form-header p{margin-top:8px;font-size:13px;color:#999;}
+    .form-group{margin-bottom:18px;}
+    .form-group label{display:block;font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:#999;margin-bottom:6px;}
+    .form-group input{width:100%;padding:13px 16px;border:1.5px solid #E8E0D5;border-radius:9px;background:#FDFAF6;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--noir);outline:none;transition:all 0.3s;}
+    .form-group input:focus{border-color:var(--rouge);box-shadow:0 0 0 3px rgba(200,16,46,0.07);}
+    .btn-main{width:100%;padding:14px;background:var(--rouge);color:white;border:none;border-radius:9px;font-size:12px;font-weight:500;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all 0.3s;font-family:'DM Sans',sans-serif;margin-top:6px;}
+    .btn-main:hover{background:var(--rouge-fonce);transform:translateY(-1px);box-shadow:0 6px 20px rgba(200,16,46,0.3);}
+    .divider{display:flex;align-items:center;gap:10px;margin:18px 0;}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:#E8E0D5;}
+    .divider span{font-size:10px;color:#CCC;letter-spacing:1px;}
+    .btn-sec{width:100%;padding:13px;background:transparent;color:var(--noir);border:1.5px solid #E8E0D5;border-radius:9px;font-size:13px;cursor:pointer;transition:all 0.3s;font-family:'DM Sans',sans-serif;margin-bottom:10px;}
+    .btn-sec:hover{border-color:var(--or);color:var(--or);}
+    .btn-admin{width:100%;padding:13px;background:rgba(212,168,67,0.07);color:#A07820;border:1.5px solid rgba(212,168,67,0.4);border-radius:9px;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.3s;font-family:'DM Sans',sans-serif;letter-spacing:1px;}
+    .btn-admin:hover{background:rgba(212,168,67,0.18);border-color:var(--or);}
+    .msg{padding:11px 14px;border-radius:7px;font-size:13px;margin-bottom:14px;border-left:3px solid;display:none;}
+    .msg-err{background:rgba(200,16,46,0.08);color:var(--rouge);border-color:var(--rouge);}
+    .msg-ok{background:rgba(34,197,94,0.08);color:#16A34A;border-color:#16A34A;}
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:999;align-items:center;justify-content:center;}
+    .modal-overlay.show{display:flex;}
+    .modal-box{background:white;border-radius:14px;padding:32px;width:360px;max-width:95vw;}
+    .modal-box h3{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:6px;}
+    .modal-box h3 span{color:var(--or);}
+    .modal-box p{font-size:13px;color:#999;margin-bottom:20px;}
+    .modal-actions{display:flex;gap:8px;margin-top:14px;}
+    .btn-cancel{flex:1;padding:11px;background:#F2EDE6;color:#888;border:none;border-radius:7px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+    .btn-entrer{flex:2;padding:11px;background:var(--noir);color:var(--or);border:none;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;}
+    .btn-entrer:hover{background:#2A1F0F;}
+    .forgot{text-align:center;margin-top:14px;font-size:12px;color:#BBB;cursor:pointer;}
+    .forgot:hover{color:var(--or);}
+  </style>
+</head>
+<body>
+  <div class="left">
+    <div class="gc gc1"></div><div class="gc gc2"></div><div class="gc gc3"></div>
+    <div class="brand">
+      <div class="brand-logo">ARDK.</div>
+      <div class="brand-tag">Système de gestion de production</div>
+      <div class="brand-sub">الأصل و العصر</div>
+    </div>
+  </div>
+  <div class="right">
+    <div class="form-wrap">
+      <div class="form-header">
+        <h2>Bienvenue <span>.</span></h2>
+        <p>Connectez-vous à votre espace de production</p>
+      </div>
+      <div class="msg msg-err" id="errMsg"></div>
+      <div class="msg msg-ok" id="okMsg"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="email" placeholder="votre@email.com"/></div>
+      <div class="form-group"><label>Mot de passe</label><input type="password" id="password" placeholder="••••••••"/></div>
+      <button class="btn-main" onclick="handleLogin()">Connexion →</button>
+
+      <div class="divider"><span>ou</span></div>
+      <button class="btn-sec" onclick="window.location.href='register.html'">Inscrire mon atelier →</button>
+      <div class="divider"><span>ou</span></div>
+      <button class="btn-admin" onclick="ouvrirAdmin()">⭐ Espace Admin</button>
+    </div>
+  </div>
+
+  <!-- MODAL ADMIN -->
+  <div class="modal-overlay" id="modalAdmin">
+    <div class="modal-box">
+      <h3>Espace <span>Admin</span></h3>
+      <p>Entrez le code secret administrateur</p>
+      <div class="form-group"><label>Code secret</label><input type="password" id="adminCode" placeholder="••••••••"/></div>
+      <div class="msg msg-err" id="adminErr">Code incorrect ❌</div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="fermerAdmin()">Annuler</button>
+        <button class="btn-entrer" onclick="verifierAdmin()">⭐ Entrer</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function handleLogin() {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const errMsg = document.getElementById('errMsg');
+      const okMsg = document.getElementById('okMsg');
+      errMsg.style.display = 'none'; okMsg.style.display = 'none';
+      if (!email || !password) { errMsg.textContent = 'Veuillez remplir tous les champs.'; errMsg.style.display = 'block'; return; }
+      try {
+        const res = await fetch('http://localhost:3000/api/utilisateurs/login', {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({email, password})
+        });
+        const data = await res.json();
+        if (res.ok) {
+          localStorage.setItem('ardk_user', JSON.stringify(data.user));
+          okMsg.textContent = 'Connexion réussie ✅ Redirection...'; okMsg.style.display = 'block';
+          setTimeout(() => { window.location.href = data.user.role === 'ADMIN' ? 'admin.html' : 'dashboard.html'; }, 900);
+        } else {
+          errMsg.textContent = data.message || 'Email ou mot de passe incorrect.'; errMsg.style.display = 'block';
+        }
+      } catch(e) { errMsg.textContent = 'Erreur serveur. Vérifiez que le backend est lancé.'; errMsg.style.display = 'block'; }
+    }
+    function ouvrirAdmin() { document.getElementById('modalAdmin').classList.add('show'); document.getElementById('adminCode').value = ''; document.getElementById('adminErr').style.display = 'none'; setTimeout(()=>document.getElementById('adminCode').focus(),100); }
+    function fermerAdmin() { document.getElementById('modalAdmin').classList.remove('show'); }
+    function verifierAdmin() {
+      if (document.getElementById('adminCode').value === 'ardk2026') {
+        localStorage.setItem('ardk_user', JSON.stringify({id:0,nom:'Admin',email:'admin@ardk.com',role:'ADMIN'}));
+        window.location.href = 'admin.html';
+      } else { document.getElementById('adminErr').style.display = 'block'; document.getElementById('adminCode').value = ''; }
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        if (document.getElementById('modalAdmin').classList.contains('show')) verifierAdmin();
+        else handleLogin();
+      }
+      if (e.key === 'Escape') { fermerAdmin(); }
+    });
+  </script>
+</body>
+</html>

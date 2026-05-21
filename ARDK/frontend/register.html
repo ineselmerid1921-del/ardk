@@ -1,0 +1,323 @@
+ <!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ARDK — Inscription</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--rouge:#C8102E;--rouge-fonce:#8B0A1E;--or:#D4A843;--or-clair:#F0C96A;--blanc:#FAFAF8;--noir:#1A1209;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'DM Sans',sans-serif;background:var(--blanc);min-height:100vh;display:flex;overflow:hidden;}
+
+    .left-panel{width:40%;background:var(--rouge);position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;}
+    .left-panel::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 40px,rgba(255,255,255,0.04) 40px,rgba(255,255,255,0.04) 42px),repeating-linear-gradient(-45deg,transparent,transparent 40px,rgba(255,255,255,0.04) 40px,rgba(255,255,255,0.04) 42px);}
+    .zellige{position:absolute;width:500px;height:500px;opacity:0.08;}
+    .zellige-top{top:-100px;right:-100px;}
+    .zellige-bottom{bottom:-100px;left:-100px;transform:rotate(180deg);}
+    .brand-content{position:relative;z-index:2;text-align:center;color:white;animation:fadeUp 0.8s ease both;}
+    .brand-logo{font-family:'Playfair Display',serif;font-size:80px;font-weight:900;letter-spacing:-2px;line-height:1;color:white;display:inline-block;}
+    .brand-logo::after{content:'';display:block;width:60px;height:4px;background:var(--or);margin:16px auto 0;border-radius:2px;}
+    .brand-tagline{margin-top:24px;font-size:13px;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,0.7);font-weight:300;}
+    .brand-sub{margin-top:8px;font-family:'Playfair Display',serif;font-size:17px;color:var(--or-clair);font-style:italic;}
+    .geo-circle{position:absolute;border-radius:50%;border:1px solid rgba(212,168,67,0.3);}
+    .gc1{width:300px;height:300px;top:50%;left:50%;transform:translate(-50%,-50%);}
+    .gc2{width:420px;height:420px;top:50%;left:50%;transform:translate(-50%,-50%);}
+    .gc3{width:550px;height:550px;top:50%;left:50%;transform:translate(-50%,-50%);}
+    .gold-ornament{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);display:flex;gap:8px;align-items:center;}
+    .gold-ornament span{display:block;background:var(--or);border-radius:50%;}
+    .gold-ornament .dot-big{width:8px;height:8px;}
+    .gold-ornament .dot-small{width:4px;height:4px;opacity:0.6;}
+    .gold-ornament .line{width:40px;height:1px;background:var(--or);opacity:0.5;border-radius:0;}
+
+    .right-panel{width:60%;display:flex;align-items:flex-start;justify-content:center;padding:40px 50px;background:var(--blanc);position:relative;overflow-y:auto;max-height:100vh;}
+    .right-panel::before{content:'';position:absolute;left:0;top:10%;bottom:10%;width:1px;background:linear-gradient(to bottom,transparent,var(--or) 50%,transparent);opacity:0.4;}
+    .form-container{width:100%;max-width:480px;animation:fadeUp 0.9s 0.2s ease both;padding-bottom:40px;}
+    .form-header{margin-bottom:28px;}
+    .form-header h2{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--noir);line-height:1.2;}
+    .form-header h2 span{color:var(--rouge);}
+    .form-header p{margin-top:8px;font-size:13px;color:#888;font-weight:300;}
+
+    .section-title{font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--rouge);margin:22px 0 12px;padding-bottom:6px;border-bottom:1px solid rgba(200,16,46,0.15);}
+
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .form-group{margin-bottom:12px;}
+    .form-group label{display:block;font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:#999;margin-bottom:6px;}
+    .form-group input,.form-group select,.form-group textarea{width:100%;padding:12px 16px;border:1.
+5px solid #E8E0D5;border-radius:10px;background:#FDFAF6;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--noir);transition:all 0.3s;outline:none;}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--rouge);background:white;box-shadow:0 0 0 4px rgba(200,16,46,0.08);}
+    .form-group input::placeholder,.form-group textarea::placeholder{color:#C5BDB3;}
+    .form-group textarea{resize:vertical;min-height:80px;}
+
+    .file-group{margin-bottom:12px;}
+    .file-group label{display:block;font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:#999;margin-bottom:6px;}
+    .file-box{display:flex;align-items:center;gap:12px;padding:10px 16px;border:1.5px dashed #E8E0D5;border-radius:10px;background:#FDFAF6;cursor:pointer;transition:all 0.3s;}
+    .file-box:hover{border-color:var(--rouge);background:white;}
+    .file-box input[type=file]{display:none;}
+    .file-btn{padding:6px 14px;background:var(--rouge);color:white;border-radius:6px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;border:none;}
+    .file-name{font-size:12px;color:#AAA;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+    .btn-submit{width:100%;padding:15px;background:var(--rouge);color:white;border:none;border-radius:10px;font-size:13px;font-weight:500;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:all 0.3s;margin-top:20px;font-family:'DM Sans',sans-serif;}
+    .btn-submit:hover{background:var(--rouge-fonce);transform:translateY(-1px);box-shadow:0 8px 24px rgba(200,16,46,0.35);}
+    .btn-back{width:100%;padding:13px;background:var(--rouge-fonce);color:white;border:none;border-radius:10px;font-size:13px;cursor:pointer;transition:all 0.3s;margin-top:10px;font-family:'DM Sans',sans-serif;}
+    .btn-back:hover{background:#6B0716;}
+
+    .error-msg{background:rgba(200,16,46,0.08);color:var(--rouge);padding:12px 16px;border-radius:8px;font-size:13px;margin-bottom:16px;border-left:3px solid var(--rouge);display:none;}
+    .success-msg{background:rgba(34,139,34,0.08);color:#228B22;padding:12px 16px;border-radius:8px;font-size:13px;margin-bottom:16px;border-left:3px solid #228B22;display:none;}
+    .spinner{display:none;width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto;}
+
+    @keyframes spin{to{transform:rotate(360deg);}}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+    @media(max-width:768px){
+      body{flex-direction:column;overflow:auto;}
+      .left-panel{width:100%;height:200px;flex-shrink:0;}
+      .brand-logo{font-size:56px;}
+      .right-panel{width:100%;padding:30px 20px;max-height:none;overflow:visible;}
+      .right-panel::before{display:none;}
+      .form-row{grid-template-columns:1fr;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- LEFT PANEL -->
+<div class="left-panel">
+  <svg class="zellige zellige-top" viewBox="0 0 200 200" fill="none">
+    <path d="M100 0 L200 100 L100 200 L0 100 Z" stroke="white" stroke-width="1"/>
+    <path d="M100 20 L180 100 L100 180 L20 100 Z" stroke="white" stroke-width="1"/>
+    <path d="M100 40 L160 100 L100 160 L40 100 Z" stroke="white" stroke-width="1"/>
+    <path d="M100 60 L140 100 L100 140 L60 100 Z" stroke="white" stroke-width="1"/>
+  </svg>
+  <svg class="zellige zellige-bottom" viewBox="0 0 200 200" fill="none">
+    <path d="M100 0 L200 100 L100 200 L0 100 Z" stroke="white" stroke-width="1"/>
+    <path d="M100 20 L180 100 L100 180 L20 100 Z" stroke="white" stroke-width="1"/>
+    <path d="M100 40 L160 100 L100 160 L40 100 Z" stroke="white" stroke-width="1"/>
+  </svg>
+  <div class="geo-circle gc1"></div>
+  <div class="geo-circle gc2"></div>
+  <div class="geo-circle gc3"></div>
+  <div class="brand-content">
+    <div class="brand-logo">ARDK.</div>
+    <div class="brand-tagline">Système de gestion de production</div>
+    <div class="brand-sub">الأصل و العصر</div>
+  </div>
+  <div class="gold-ornament">
+<span class="dot-small"></span>
+    <span class="line"></span>
+    <span class="dot-big"></span>
+    <span class="line"></span>
+    <span class="dot-small"></span>
+  </div>
+</div>
+
+<!-- RIGHT PANEL -->
+<div class="right-panel">
+  <div class="form-container">
+    <div class="form-header">
+      <h2>Inscrire mon atelier <span>.</span></h2>
+      <p>Remplissez les informations pour créer votre compte</p>
+    </div>
+
+    <div class="error-msg" id="errorMsg"></div>
+    <div class="success-msg" id="successMsg"></div>
+
+    <!-- COMPTE -->
+    <div class="section-title">👤 Compte utilisateur</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Nom</label>
+        <input type="text" id="nom" placeholder="Nom"/>
+      </div>
+      <div class="form-group">
+        <label>Prénom</label>
+        <input type="text" id="prenom" placeholder="Prénom"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="votre@email.com"/>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Mot de passe</label>
+        <input type="password" id="mot_de_passe" placeholder="••••••••"/>
+      </div>
+      <div class="form-group">
+        <label>Confirmer</label>
+        <input type="password" id="confirm_mdp" placeholder="••••••••"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Téléphone chef</label>
+      <input type="tel" id="tel_chef" placeholder="0X XX XX XX XX"/>
+    </div>
+
+    <!-- ATELIER -->
+    <div class="section-title">🏭 Informations atelier</div>
+    <div class="form-group">
+      <label>Nom de l'atelier</label>
+      <input type="text" id="nom_atelier" placeholder="Nom de votre atelier"/>
+    </div>
+    <div class="form-group">
+      <label>Adresse</label>
+      <input type="text" id="localisation" placeholder="Adresse, ville, wilaya..."/>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Matériel</label>
+        <input type="text" id="materiel" placeholder="ex: machines, outils..."/>
+      </div>
+      <div class="form-group">
+        <label>Type machine</label>
+        <input type="text" id="type_machine" placeholder="ex: industrielle..."/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Téléphone atelier</label>
+        <input type="tel" id="tel_atelier" placeholder="0X XX XX XX XX"/>
+      </div>
+      <div class="form-group">
+        <label>Nombre employés</label>
+        <input type="number" id="capacite_production" placeholder="ex: 20"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Expérience (années)</label>
+      <input type="number" id="experience" placeholder="ex: 5"/>
+    </div>
+    <div class="form-group">
+      <label>Autres informations</label>
+      <textarea id="notes" placeholder="Ajouter d'autres informations..."></textarea>
+    </div>
+
+    <!-- FICHIERS -->
+    <div class="section-title">📎 Documents</div>
+    <div class="file-group">
+      <label>Photo de l'atelier</label>
+      <div class="file-box" onclick="document.getElementById('photo_atelier').click()">
+        <button class="file-btn" type="button">Choisir un fichier</button>
+        <span class="file-name" id="photo_atelier_name">Aucun fichier sélectionné</span>
+        <input type="file" id="photo_atelier" accept="image/*" onchange="updateFileName('photo_atelier','photo_atelier_name')"/>
+      </div>
+    </div>
+    <div class="file-group">
+      <label>Document officiel (registre, etc.)</label>
+      <div class="file-box" onclick="document.getElementById('doc_officiel').click()">
+        <button class="file-btn" type="button">Choisir un fichier</button>
+        <span class="file-name" id="doc_officiel_name">Aucun fichier sélectionné</span>
+        <input type="file" id="doc_officiel" accept=".pdf,.jpg,.png" onchange="updateFileName('doc_officiel','doc_officiel_name')"/>
+      </div>
+    </div>
+
+    <button class="btn-submit" onclick="handleRegister()">
+<span id="btnText">VALIDER INSCRIPTION →</span>
+      <div class="spinner" id="spinner"></div>
+    </button>
+    <button class="btn-back" onclick="window.location.href='login.html'">← Retour</button>
+  </div>
+</div>
+
+<script>
+  const API = 'http://localhost:3000/api';
+
+  function updateFileName(inputId, nameId) {
+    const file = document.getElementById(inputId).files[0];
+    document.getElementById(nameId).textContent = file ? file.name : 'Aucun fichier sélectionné';
+  }
+
+  async function handleRegister() {
+    const errorMsg   = document.getElementById('errorMsg');
+    const successMsg = document.getElementById('successMsg');
+    const btnText    = document.getElementById('btnText');
+    const spinner    = document.getElementById('spinner');
+
+    errorMsg.style.display  = 'none';
+    successMsg.style.display = 'none';
+
+    const nom          = document.getElementById('nom').value.trim();
+    const prenom       = document.getElementById('prenom').value.trim();
+    const email        = document.getElementById('email').value.trim();
+    const mot_de_passe = document.getElementById('mot_de_passe').value;
+    const confirm_mdp  = document.getElementById('confirm_mdp').value;
+    const nom_atelier  = document.getElementById('nom_atelier').value.trim();
+    const localisation = document.getElementById('localisation').value.trim();
+    const capacite     = document.getElementById('capacite_production').value;
+    const tel_chef     = document.getElementById('tel_chef').value.trim();
+    const tel_atelier  = document.getElementById('tel_atelier').value.trim();
+    const materiel     = document.getElementById('materiel').value.trim();
+    const type_machine = document.getElementById('type_machine').value.trim();
+    const experience   = document.getElementById('experience').value;
+    const notes        = document.getElementById('notes').value.trim();
+
+    if (!nom || !email || !mot_de_passe || !nom_atelier) {
+      errorMsg.textContent = 'Veuillez remplir tous les champs obligatoires.';
+      errorMsg.style.display = 'block';
+      return;
+    }
+    if (mot_de_passe !== confirm_mdp) {
+      errorMsg.textContent = 'Les mots de passe ne correspondent pas.';
+      errorMsg.style.display = 'block';
+      return;
+    }
+    if (mot_de_passe.length < 6) {
+      errorMsg.textContent = 'Le mot de passe doit contenir au moins 6 caractères.';
+      errorMsg.style.display = 'block';
+      return;
+    }
+
+    btnText.style.display = 'none';
+    spinner.style.display = 'block';
+
+    try {
+      // 1 — Créer l'atelier
+      const resAtelier = await fetch(`${API}/ateliers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nom: nom_atelier,
+          localisation: localisation || null,
+          capacite_production: parseInt(capacite) || null,
+          nom_chef: `${nom} ${prenom}`.trim(),
+          email_chef: email,
+          tel_chef: tel_chef || null,
+          tel_atelier: tel_atelier || null,
+          materiel: materiel || null,
+          type_machine: type_machine || null,
+          experience: parseInt(experience) || null,
+          notes: notes || null
+        })
+      });
+      const dataAtelier = await resAtelier.json();
+      if (!resAtelier.ok) throw new Error(dataAtelier.message || "Erreur création atelier.");
+
+      // 2 — Créer l'utilisateur
+      const resUser = await fetch(`${API}/utilisateurs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nom: `${nom} ${prenom}`.trim(),
+          email,
+          mot_de_passe,
+          role: 'ATELIER'
+        })
+      });
+      const dataUser = await resUser.json();
+      if (!resUser.ok) throw new Error(dataUser.message || "Erreur création compte.");
+
+      successMsg.textContent = '✅ Inscription réussie ! Redirection vers la connexion...';
+      successMsg.style.display = 'block';
+      setTimeout(() => window.location.href = 'login.html', 2000);
+
+    } catch (err) {
+      errorMsg.textContent = err.message || 'Erreur serveur. Vérifiez que le backend est lancé.';
+      errorMsg.style.display = 'block';
+    } finally {
+      btnText.style.display = 'block';
+      spinner.style.display = 'none';
+    }
+  }
+</script>
+</body>
+</html>

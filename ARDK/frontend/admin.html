@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>ARDK — Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--rouge:#C8102E;--rouge-fonce:#8B0A1E;--or:#D4A843;--noir:#1A1209;--gris:#F2EDE6;--vert:#16A34A;--sidebar-w:240px;}
+    *{margin:0;padding:0;box-sizing:border-box;}html,body{height:100%;}
+    body{font-family:'DM Sans',sans-serif;background:var(--gris);display:flex;height:100vh;overflow:hidden;color:var(--noir);}
+    .sidebar{width:var(--sidebar-w);background:var(--noir);height:100vh;position:fixed;left:0;top:0;display:flex;flex-direction:column;z-index:100;overflow-y:auto;}
+    .sidebar-logo{padding:24px 20px 18px;border-bottom:1px solid rgba(255,255,255,0.08);}
+    .sidebar-logo h1{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;color:white;}
+    .sidebar-logo h1 span{color:var(--or);}
+    .sidebar-logo p{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-top:3px;}
+    .admin-badge{display:inline-block;margin-top:7px;padding:2px 10px;background:rgba(212,168,67,0.18);border:1px solid rgba(212,168,67,0.35);border-radius:20px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--or);}
+    .sidebar-user{padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px;}
+    .user-avatar{width:34px;height:34px;background:var(--or);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--noir);}
+    .user-info p{font-size:13px;color:white;font-weight:500;}.user-info span{font-size:11px;color:var(--or);}
+    .sidebar-nav{flex:1;padding:10px 0;}
+    .nav-section{padding:8px 20px 3px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.22);}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;color:rgba(255,255,255,0.5);font-size:13px;text-decoration:none;border-left:3px solid transparent;transition:all 0.2s;cursor:pointer;background:none;border-right:none;border-top:none;border-bottom:none;width:100%;font-family:'DM Sans',sans-serif;}
+    .nav-item:hover{background:rgba(255,255,255,0.05);color:white;}
+    .nav-item.active{background:rgba(212,168,67,0.15);color:var(--or);border-left-color:var(--or);}
+    .nav-item .icon{font-size:14px;width:18px;text-align:center;}
+    .sidebar-footer{padding:14px 20px;border-top:1px solid rgba(255,255,255,0.08);}
+    .btn-logout{width:100%;padding:9px;background:rgba(200,16,46,0.12);color:rgba(255,255,255,0.55);border:1px solid rgba(200,16,46,0.25);border-radius:8px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+    .btn-logout:hover{background:var(--rouge);color:white;}
+    .main{margin-left:var(--sidebar-w);flex:1;padding:26px 28px;overflow-y:auto;height:100vh;}
+    .view{display:none;}.view.active{display:block;}
+    .page-header{margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;}
+    .page-header h2{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;}
+    .or-line{display:inline-block;width:26px;height:2px;background:var(--or);border-radius:1px;vertical-align:middle;margin-right:8px;}
+    .filter-bar{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
+    .filter-btn{padding:6px 14px;border-radius:20px;border:1.5px solid #E8E0D5;background:white;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.2s;color:#888;}
+    .filter-btn.active{background:var(--noir);color:white;border-color:var(--noir);}
+    .filter-btn.f-wait.active{background:#F59E0B;border-color:#F59E0B;color:white;}
+    .filter-btn.f-ok.active{background:var(--vert);border-color:var(--vert);color:white;}
+    .filter-btn.f-no.active{background:var(--rouge);border-color:var(--rouge);color:white;}
+    .global-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+    .global-card{background:white;border-radius:12px;padding:18px 22px;display:flex;align-items:center;gap:14px;}
+    .global-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+    .gi-r{background:rgba(200,16,46,0.08);}.gi-o{background:rgba(212,168,67,0.1);}.gi-v{background:rgba(34,197,94,0.08);}.gi-w{background:rgba(245,158,11,0.1);}
+    .global-val{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;}
+    .global-lbl{font-size:11px;color:#999;margin-top:2px;}
+    .ateliers-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+    .at-card{background:white;border-radius:14px;padding:24px;cursor:pointer;transition:all 0.25s;border:2px solid transparent;position:relative;}
+    .at-card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,0.08);}
+    .at-card.status-ACCEPTE{border-color:rgba(34,197,94,0.3);}
+    .at-card.status-REFUSE{border-color:rgba(200,16,46,0.2);}
+    .at-card.status-EN_ATTENTE{border-color:rgba(245,158,11,0.3);}
+    .at-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
+    .at-icon{width:48px;height:48px;background:rgba(212,168,67,0.1);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;}
+    .at-status-pill{font-size:10px;padding:3px 10px;border-radius:20px;font-weight:600;letter-spacing:0.5px;}
+    .pill-wait{background:rgba(245,158,11,0.12);color:#D97706;}
+    .pill-ok{background:rgba(34,197,94,0.1);color:var(--vert);}
+    .pill-no{background:rgba(200,16,46,0.1);color:var(--rouge);}
+    .at-nom{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-bottom:5px;}
+    .at-loc{font-size:12px;color:#999;margin-bottom:14px;}
+    .at-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 0;border-top:1px solid #F0EBE3;border-bottom:1px solid #F0EBE3;margin-bottom:14px;}
+    .at-stat{text-align:center;}.at-stat .val{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--rouge);}
+    .at-stat .lbl{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#BBB;margin-top:2px;}
+    .at-actions{display:flex;gap:8px;}
+    .btn-accepter{flex:1;padding:7px;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;background:rgba(34,197,94,0.1);color:var(--vert);}
+    .btn-accepter:hover{background:var(--vert);color:white;}
+    .btn-refuser{flex:1;padding:7px;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;background:rgba(200,16,46,0.08);color:var(--rouge);}
+    .btn-refuser:hover{background:var(--rouge);color:white;}
+    .btn-detail{padding:7px 12px;border:1.5px solid #E8E0D5;border-radius:7px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;background:white;color:#888;transition:all 0.2s;}
+    .btn-detail:hover{border-color:var(--or);color:var(--or);}
+    .btn-accepter:disabled,.btn-refuser:disabled{opacity:0.4;cursor:not-allowed;}
+    .btn-back{display:flex;align-items:center;gap:6px;padding:7px 14px;background:white;border:1.5px solid #E8E0D5;border-radius:7px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--noir);margin-bottom:20px;transition:all 0.2s;}
+    .btn-back:hover{border-color:var(--or);color:var(--or);}
+    .detail-header{background:white;border-radius:14px;padding:24px;margin-bottom:20px;}
+    .detail-icon{width:56px;height:56px;background:rgba(212,168,67,0.1);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;}
+    .detail-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;}
+    .detail-sub{font-size:12px;color:#999;margin-top:3px;}
+    .info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px;}
+    .info-box{background:#F7F4F0;border-radius:8px;padding:10px 14px;}
+    .info-box .lbl{font-size:10px;color:#999;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}
+    .info-box .val{font-size:13px;font-weight:500;}
+    .info-box.full{grid-column:1/-1;}
+    .detail-actions-row{display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding-top:16px;border-top:1px solid #F0EBE3;}
+    .detail-cap .lbl{font-size:10px;color:#999;letter-spacing:1px;text-transform:uppercase;}
+    .detail-cap .val{font-family:'Playfair Display',serif;font-size:26px;font-weight:700;}
+    .detail-cap .sub{font-size:11px;color:#BBB;}
+    .detail-btns{display:flex;gap:8px;}
+    .btn-acc-lg{padding:8px 18px;background:rgba(34,197,94,0.1);color:var(--vert);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+    .btn-acc-lg:hover{background:var(--vert);color:white;}
+    .btn-ref-lg{padding:8px 18px;background:rgba(200,16,46,0.08);color:var(--rouge);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+    .btn-ref-lg:hover{background:var(--rouge);color:white;}
+    .btn-acc-lg:disabled,.btn-ref-lg:disabled{opacity:0.35;cursor:not-allowed;}
+    .status-banner{padding:10px 16px;border-radius:9px;font-size:13px;font-weight:500;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+    .sb-wait{background:rgba(245,158,11,0.1);color:#D97706;border:1px solid rgba(245,158,11,0.25);}
+    .sb-ok{background:rgba(34,197,94,0.08);color:var(--vert);border:1px solid rgba(34,197,94,0.2);}
+    .sb-no{background:rgba(200,16,46,0.07);color:var(--rouge);border:1px solid rgba(200,16,46,0.15);}
+    .tabs{display:flex;gap:3px;background:white;border-radius:10px;padding:5px;margin-bottom:20px;width:fit-content;}
+    .tab{padding:7px 16px;border-radius:7px;font-size:13px;cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;color:#888;transition:all 0.2s;}
+    .tab.active{background:var(--rouge);color:white;}
+    .tab:hover:not(.active){background:var(--gris);}
+    .tab-content{display:none;}.tab-content.active{display:block;}
+    .card{background:white;border-radius:12px;padding:22px;margin-bottom:18px;}
+    .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+    .card-header h3{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;}
+    table{width:100%;border-collapse:collapse;}
+    thead th{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#BBB;font-weight:500;padding:7px 10px;text-align:left;border-bottom:1px solid #F0EBE3;}
+    tbody td{padding:10px;font-size:13px;border-bottom:1px solid #F7F4F0;}
+    tbody tr:last-child td{border-bottom:none;}tbody tr:hover td{background:#FDFAF6;}
+    .badge{font-size:11px;padding:2px 9px;border-radius:20px;font-weight:500;}
+    .badge-rouge{background:rgba(200,16,46,0.1);color:var(--rouge);}
+    .badge-or{background:rgba(212,168,67,0.15);color:#A07820;}
+    .badge-vert{background:rgba(34,197,94,0.1);color:#16A34A;}
+    .badge-bleu{background:rgba(59,130,246,0.1);color:#2563EB;}
+    .badge-gris{background:#F3F4F6;color:#6B7280;}
+    .empty{text-align:center;padding:28px;color:#CCC;font-size:13px;}
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+    .stat-card{background:white;border-radius:12px;padding:20px;position:relative;overflow:hidden;}
+    .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+    .sc-r::before{background:var(--rouge);}.sc-o::before{background:var(--or);}.sc-v::before{background:#22C55E;}.sc-b::before{background:#3B82F6;}
+    .stat-icon{font-size:22px;margin-bottom:8px;}
+    .stat-val{font-family:'Playfair Display',serif;font-size:30px;font-weight:700;}
+    .stat-lbl{font-size:10px;color:#999;margin-top:4px;letter-spacing:1px;text-transform:uppercase;}
+    .toast{position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;color:white;z-index:999;opacity:0;transform:translateY(10px);transition:all 0.3s;pointer-events:none;}
+    .toast.show{opacity:1;transform:translateY(0);}
+    .toast-ok{background:#16A34A;}.toast-err{background:var(--rouge);}
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <h1>ARDK<span>.</span></h1>
+      <p>Système de production</p>
+      <span class="admin-badge">⭐ Admin</span>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar" id="adminAvatar">A</div>
+      <div class="user-info"><p id="adminNom">Admin</p><span>Administrateur</span></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Vue générale</div>
+      <button class="nav-item active" onclick="showView('ateliers')"><span class="icon">🏭</span> Tous les Ateliers</button>
+      <div class="nav-section">Global</div>
+      <button class="nav-item" onclick="showView('stats')"><span class="icon">📊</span> Statistiques</button>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="logout()">← Déconnexion</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <!-- VUE ATELIERS -->
+    <div class="view active" id="view-ateliers">
+      <div class="page-header">
+        <div>
+          <h2><span class="or-line"></span>Tous les Ateliers<span style="color:var(--rouge)">.</span></h2>
+          <p style="font-size:12px;color:#999;margin-top:3px">Acceptez ou refusez les ateliers enregistrés</p>
+        </div>
+      </div>
+      <div class="global-grid">
+        <div class="global-card"><div class="global-icon gi-r">🏭</div><div><div class="global-val" id="gAt">—</div><div class="global-lbl">Total ateliers</div></div></div>
+        <div class="global-card"><div class="global-icon gi-w">⏳</div><div><div class="global-val" id="gWait">—</div><div class="global-lbl">En attente</div></div></div>
+        <div class="global-card"><div class="global-icon gi-v">✅</div><div><div class="global-val" id="gOk">—</div><div class="global-lbl">Acceptés</div></div></div>
+        <div class="global-card"><div class="global-icon gi-r">❌</div><div><div class="global-val" id="gNo">—</div><div class="global-lbl">Refusés</div></div></div>
+      </div>
+      <div class="filter-bar">
+        <button class="filter-btn f-all active" onclick="filterAteliers('ALL',this)">Tous</button>
+        <button class="filter-btn f-wait" onclick="filterAteliers('EN_ATTENTE',this)">⏳ En attente</button>
+        <button class="filter-btn f-ok" onclick="filterAteliers('ACCEPTE',this)">✅ Acceptés</button>
+        <button class="filter-btn f-no" onclick="filterAteliers('REFUSE',this)">❌ Refusés</button>
+      </div>
+      <div class="ateliers-grid" id="ateliersGrid">
+        <div class="empty" style="grid-column:1/-1">Chargement...</div>
+      </div>
+    </div>
+
+    <!-- VUE DETAIL -->
+    <div class="view" id="view-detail">
+      <button class="btn-back" onclick="showView('ateliers')">← Retour</button>
+      <div id="detail-status-banner"></div>
+      <div class="detail-header">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">
+          <div class="detail-icon">🏭</div>
+          <div>
+            <div class="detail-title" id="dNom">—</div>
+            <div class="detail-sub" id="dLoc">—</div>
+          </div>
+        </div>
+        <div class="info-grid">
+          <div class="info-box"><div class="lbl">Chef d'atelier</div><div class="val" id="dChef">—</div></div>
+          <div class="info-box"><div class="lbl">Email</div><div class="val" id="dEmail">—</div></div>
+          <div class="info-box"><div class="lbl">Téléphone chef</div><div class="val" id="dTelChef">—</div></div>
+          <div class="info-box"><div class="lbl">Téléphone atelier</div><div class="val" id="dTelAt">—</div></div>
+          <div class="info-box"><div class="lbl">Type machine</div><div class="val" id="dMachine">—</div></div>
+          <div class="info-box"><div class="lbl">Expérience</div><div class="val" id="dExp">—</div></div>
+          <div class="info-box"><div class="lbl">Matériel</div><div class="val" id="dMat">—</div></div>
+          <div class="info-box"><div class="lbl">Capacité</div><div class="val" id="dCap">—</div></div>
+          <div class="info-box full"><div class="lbl">Notes</div><div class="val" id="dNotes">—</div></div>
+        </div>
+        <div class="detail-actions-row">
+          <div></div>
+          <div class="detail-btns">
+            <button class="btn-acc-lg" id="btn-detail-accepter" onclick="accepterAtelier(currentAtelierId)">✅ Accepter</button>
+            <button class="btn-ref-lg" id="btn-detail-refuser" onclick="refuserAtelier(currentAtelierId)">❌ Refuser</button>
+          </div>
+        </div>
+      </div>
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('artisans',this)">👷 Artisans</button>
+        <button class="tab" onclick="switchTab('of',this)">⚙️ Ordres fab.</button>
+        <button class="tab" onclick="switchTab('stock',this)">📦 Stock</button>
+        <button class="tab" onclick="switchTab('qualite',this)">✅ Qualité</button>
+      </div>
+      <div class="tab-content active" id="tab-artisans">
+        <div class="card"><div class="card-header"><h3>Artisans</h3><span class="badge badge-or" id="cArtisans">0</span></div>
+        <table><thead><tr><th>Nom</th><th>Compétences</th><th>Statut</th></tr></thead>
+        <tbody id="tbArtisans"><tr><td colspan="3" class="empty">Chargement...</td></tr></tbody></table></div>
+      </div>
+      <div class="tab-content" id="tab-of">
+        <div class="card"><div class="card-header"><h3>Ordres de fabrication</h3><span class="badge badge-rouge" id="cOF">0</span></div>
+        <table><thead><tr><th>ID</th><th>Qté</th><th>Date lancement</th><th>Statut</th></tr></thead>
+        <tbody id="tbOF"><tr><td colspan="4" class="empty">Chargement...</td></tr></tbody></table></div>
+      </div>
+      <div class="tab-content" id="tab-stock">
+        <div class="card"><div class="card-header"><h3>Stock</h3></div>
+        <table><thead><tr><th>Article</th><th>Qté disponible</th><th>Seuil alerte</th><th>État</th></tr></thead>
+        <tbody id="tbStock"><tr><td colspan="4" class="empty">Chargement...</td></tr></tbody></table></div>
+      </div>
+      <div class="tab-content" id="tab-qualite">
+        <div class="card"><div class="card-header"><h3>Contrôle qualité</h3><span class="badge badge-vert" id="cQualite">0</span></div>
+        <table><thead><tr><th>ID</th><th>Date</th><th>Résultat</th><th>Commentaire</th></tr></thead>
+        <tbody id="tbQualite"><tr><td colspan="4" class="empty">Chargement...</td></tr></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- VUE STATS -->
+    <div class="view" id="view-stats">
+      <div class="page-header"><div><h2><span class="or-line"></span>Statistiques<span style="color:var(--rouge)">.</span></h2></div></div>
+      <div class="stats-grid">
+        <div class="stat-card sc-r"><div class="stat-icon">🏭</div><div class="stat-val" id="ss-at">—</div><div class="stat-lbl">Ateliers</div></div>
+        <div class="stat-card sc-o"><div class="stat-icon">👷</div><div class="stat-val" id="ss-an">—</div><div class="stat-lbl">Artisans</div></div>
+        <div class="stat-card sc-v"><div class="stat-icon">📦</div><div class="stat-val" id="ss-ar">—</div><div class="stat-lbl">Articles</div></div>
+        <div class="stat-card sc-b"><div class="stat-icon">⚙️</div><div class="stat-val" id="ss-of">—</div><div class="stat-lbl">Ordres fab.</div></div>
+      </div>
+      <div class="card"><div class="card-header"><h3>Utilisateurs</h3></div>
+        <table><thead><tr><th>Nom</th><th>Email</th><th>Rôle</th></tr></thead>
+        <tbody id="tbUsers"><tr><td colspan="3" class="empty">Chargement...</td></tr></tbody></table>
+      </div>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const API = 'http://localhost:3000/api';
+    const user = JSON.parse(localStorage.getItem('ardk_user') || 'null');
+    if (!user || user.role !== 'ADMIN') { window.location.href = 'login.html'; throw new Error('redirect'); }
+    document.getElementById('adminNom').textContent = user?.nom || 'Admin';
+    document.getElementById('adminAvatar').textContent = (user?.nom || 'A')[0].toUpperCase();
+
+    function logout() { localStorage.removeItem('ardk_user'); window.location.href = 'login.html'; }
+    function escH(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function fmt(d) { return d ? new Date(d).toLocaleDateString('fr-FR') : '—'; }
+
+    function statusBadge(s) {
+      const m = {
+        'PLANIFIE':['badge-gris','Planifié'],'EN_COURS':['badge-or','En cours'],
+        'TERMINE':['badge-vert','Terminé'],'ANNULE':['badge-rouge','Annulé'],
+        'ACCEPTE':['badge-vert','Accepté'],'REFUSE':['badge-rouge','Refusé'],
+        'EN_ATTENTE':['badge-or','En attente'],
+        'ACTIF':['badge-vert','Actif'],'INACTIF':['badge-gris','Inactif']
+      };
+      const [c, l] = m[s] || ['badge-gris', s || '—'];
+      return `<span class="badge ${c}">${l}</span>`;
+    }
+
+    function showToast(msg, ok = true) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast show ' + (ok ? 'toast-ok' : 'toast-err');
+      setTimeout(() => { t.classList.remove('show'); }, 2800);
+    }
+
+    function showView(name) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById('view-' + name).classList.add('active');
+      if (name === 'stats') { document.querySelectorAll('.nav-item')[1].classList.add('active'); loadStats(); }
+      else { document.querySelectorAll('.nav-item')[0].classList.add('active'); }
+    }
+
+    function switchTab(name, btn) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-' + name).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    let allAteliers = [], allArtisans = [], allOFs = [];
+    let currentFilter = 'ALL';
+    let currentAtelierId = null;
+
+    async function loadAteliers() {
+      try {
+        const [ats, ans, ofs] = await Promise.all([
+          fetch(`${API}/ateliers`).then(r => r.json()),
+          fetch(`${API}/artisans`).then(r => r.json()),
+          fetch(`${API}/ordre-fabrication`).then(r => r.json())
+        ]);
+        allAteliers = ats; allArtisans = ans; allOFs = ofs;
+        const wait = ats.filter(a => !a.statut || a.statut === 'EN_ATTENTE').length;
+        const ok   = ats.filter(a => a.statut === 'ACCEPTE').length;
+        const no   = ats.filter(a => a.statut === 'REFUSE').length;
+        document.getElementById('gAt').textContent   = ats.length;
+        document.getElementById('gWait').textContent = wait;
+        document.getElementById('gOk').textContent   = ok;
+        document.getElementById('gNo').textContent   = no;
+        renderGrid(ats, ans, ofs);
+      } catch(e) {
+        document.getElementById('ateliersGrid').innerHTML = '<div class="empty" style="grid-column:1/-1">❌ Erreur connexion serveur</div>';
+      }
+    }
+
+    function renderGrid(ats, ans, ofs) {
+      const filtered = currentFilter === 'ALL' ? ats : ats.filter(a => (a.statut || 'EN_ATTENTE') === currentFilter);
+      const grid = document.getElementById('ateliersGrid');
+      if (!filtered.length) { grid.innerHTML = '<div class="empty" style="grid-column:1/-1">Aucun atelier dans cette catégorie</div>'; return; }
+      grid.innerHTML = filtered.map(a => {
+        const statut  = a.statut || 'EN_ATTENTE';
+        const nbAn    = ans.filter(x => x.id_atelier === a.id_atelier).length;
+        const nbOF    = ofs.filter(x => x.id_atelier === a.id_atelier).length;
+        const pillCls = statut === 'ACCEPTE' ? 'pill-ok' : statut === 'REFUSE' ? 'pill-no' : 'pill-wait';
+        const pillTxt = statut === 'ACCEPTE' ? '✅ Accepté' : statut === 'REFUSE' ? '❌ Refusé' : '⏳ En attente';
+        const disAcc  = statut === 'ACCEPTE' ? 'disabled' : '';
+        const disRef  = statut === 'REFUSE'  ? 'disabled' : '';
+        return `<div class="at-card status-${statut}">
+          <div class="at-top">
+            <div class="at-icon">🏭</div>
+            <span class="at-status-pill ${pillCls}">${pillTxt}</span>
+          </div>
+          <div class="at-nom">${escH(a.nom)}</div>
+          <div class="at-loc">📍 ${escH(a.localisation || 'Non renseigné')}</div>
+          <div class="at-stats">
+            <div class="at-stat"><div class="val">${nbAn}</div><div class="lbl">Artisans</div></div>
+            <div class="at-stat"><div class="val">${nbOF}</div><div class="lbl">Ordres</div></div>
+          </div>
+          <div class="at-actions">
+            <button class="btn-accepter" ${disAcc} onclick="event.stopPropagation();accepterAtelier(${a.id_atelier})">✅ Accepter</button>
+            <button class="btn-refuser"  ${disRef} onclick="event.stopPropagation();refuserAtelier(${a.id_atelier})">❌ Refuser</button>
+            <button class="btn-detail" onclick="event.stopPropagation();openAtelier(${a.id_atelier})">→</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function filterAteliers(val, btn) {
+      currentFilter = val;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderGrid(allAteliers, allArtisans, allOFs);
+    }
+
+    async function accepterAtelier(id) {
+      try {
+        await fetch(`${API}/ateliers/${id}/accepter`, { method: 'PUT' });
+        showToast('Atelier accepté ✅', true);
+        await loadAteliers();
+        if (currentAtelierId === id) updateDetailBanner('ACCEPTE');
+      } catch(e) { showToast('Erreur !', false); }
+    }
+
+    async function refuserAtelier(id) {
+      try {
+        await fetch(`${API}/ateliers/${id}/refuser`, { method: 'PUT' });
+        showToast('Atelier refusé ❌', false);
+        await loadAteliers();
+        if (currentAtelierId === id) updateDetailBanner('REFUSE');
+      } catch(e) { showToast('Erreur !', false); }
+    }
+
+    async function openAtelier(id) {
+      currentAtelierId = id;
+      const a = allAteliers.find(x => x.id_atelier === id) || {};
+      const statut = a.statut || 'EN_ATTENTE';
+
+      document.getElementById('dNom').textContent     = a.nom || '—';
+      document.getElementById('dLoc').textContent     = '📍 ' + (a.localisation || 'Non renseigné');
+      document.getElementById('dChef').textContent    = a.nom_chef || '—';
+      document.getElementById('dEmail').textContent   = a.email_chef || '—';
+      document.getElementById('dTelChef').textContent = a.tel_chef || '—';
+      document.getElementById('dTelAt').textContent   = a.tel_atelier || '—';
+      document.getElementById('dMachine').textContent = a.type_machine || '—';
+      document.getElementById('dExp').textContent     = a.experience ? a.experience + ' ans' : '—';
+      document.getElementById('dMat').textContent     = a.materiel || '—';
+      document.getElementById('dCap').textContent     = a.capacite_production ? a.capacite_production + ' unités/jour' : '—';
+      document.getElementById('dNotes').textContent   = a.notes || '—';
+
+      updateDetailBanner(statut);
+
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-artisans').classList.add('active');
+      document.querySelectorAll('.tab')[0].classList.add('active');
+
+      showView('detail');
+
+      const ans = allArtisans.filter(x => x.id_atelier === id);
+      document.getElementById('cArtisans').textContent = ans.length + ' artisan(s)';
+      document.getElementById('tbArtisans').innerHTML = !ans.length
+        ? '<tr><td colspan="3" class="empty">Aucun artisan</td></tr>'
+        : ans.map(a => `<tr><td><b>${escH(a.nom)}</b></td><td>${escH(a.competences || '—')}</td><td>${statusBadge(a.statut)}</td></tr>`).join('');
+
+      const ofs = allOFs.filter(x => x.id_atelier === id);
+      document.getElementById('cOF').textContent = ofs.length + ' ordre(s)';
+      document.getElementById('tbOF').innerHTML = !ofs.length
+        ? '<tr><td colspan="4" class="empty">Aucun ordre</td></tr>'
+        : ofs.map(o => `<tr><td><b>#${o.id_of}</b></td><td>${o.quantite_a_produire || '—'}</td><td>${fmt(o.date_lancement)}</td><td>${statusBadge(o.statut)}</td></tr>`).join('');
+
+      try {
+        const stock = await fetch(`${API}/ligne-stock`).then(r => r.json());
+        document.getElementById('tbStock').innerHTML = !stock.length
+          ? '<tr><td colspan="4" class="empty">Aucun stock</td></tr>'
+          : stock.slice(0,15).map(s => `<tr>
+              <td>${escH(s.article_nom || '—')}</td><td>${s.quantite_disponible ?? '—'}</td><td>${s.seuil_alerte ?? '—'}</td>
+              <td>${s.quantite_disponible <= (s.seuil_alerte || 0) ? '<span class="badge badge-rouge">⚠️ Bas</span>' : '<span class="badge badge-vert">✅ OK</span>'}</td>
+            </tr>`).join('');
+        const qual = await fetch(`${API}/controle-qualite`).then(r => r.json());
+        document.getElementById('cQualite').textContent = qual.length + ' contrôle(s)';
+        document.getElementById('tbQualite').innerHTML = !qual.length
+          ? '<tr><td colspan="4" class="empty">Aucun contrôle</td></tr>'
+          : qual.slice(0,15).map(q => `<tr><td>#${q.id_controle}</td><td>${fmt(q.date_controle)}</td><td>${statusBadge(q.resultat)}</td><td>${escH(q.commentaire || '—')}</td></tr>`).join('');
+      } catch(e) {}
+    }
+
+    function updateDetailBanner(statut) {
+      const bannerEl = document.getElementById('detail-status-banner');
+      const accBtn   = document.getElementById('btn-detail-accepter');
+      const refBtn   = document.getElementById('btn-detail-refuser');
+      if (statut === 'ACCEPTE') {
+        bannerEl.innerHTML = '<div class="status-banner sb-ok">✅ Cet atelier est <b>Accepté</b></div>';
+        accBtn.disabled = true; refBtn.disabled = false;
+      } else if (statut === 'REFUSE') {
+        bannerEl.innerHTML = '<div class="status-banner sb-no">❌ Cet atelier est <b>Refusé</b></div>';
+        accBtn.disabled = false; refBtn.disabled = true;
+      } else {
+        bannerEl.innerHTML = '<div class="status-banner sb-wait">⏳ Cet atelier est <b>En attente</b> de décision</div>';
+        accBtn.disabled = false; refBtn.disabled = false;
+      }
+    }
+
+    async function loadStats() {
+      try {
+        const [ats, ans, arts, ofs, users] = await Promise.all([
+          fetch(`${API}/ateliers`).then(r => r.json()),
+          fetch(`${API}/artisans`).then(r => r.json()),
+          fetch(`${API}/articles`).then(r => r.json()),
+          fetch(`${API}/ordre-fabrication`).then(r => r.json()),
+          fetch(`${API}/utilisateurs`).then(r => r.json())
+        ]);
+        document.getElementById('ss-at').textContent = ats.length;
+        document.getElementById('ss-an').textContent = ans.length;
+        document.getElementById('ss-ar').textContent = arts.length;
+        document.getElementById('ss-of').textContent = ofs.length;
+        const roles = {'ADMIN':'badge-rouge','ATELIER':'badge-or','ARTISAN':'badge-bleu','QUALITE':'badge-vert','COORDINATEUR':'badge-gris'};
+        document.getElementById('tbUsers').innerHTML = !users.length
+          ? '<tr><td colspan="3" class="empty">Aucun utilisateur</td></tr>'
+          : users.map(u => `<tr><td><b>${escH(u.nom)}</b></td><td>${escH(u.email)}</td><td><span class="badge ${roles[u.role] || 'badge-gris'}">${u.role || '—'}</span></td></tr>`).join('');
+      } catch(e) {}
+    }
+
+    loadAteliers();
+  </script>
+</body>
+</html>

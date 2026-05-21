@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>ARDK — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+
+    :root{--rouge:#C8102E;--rouge-fonce:#8B0A1E;--or:#D4A843;--noir:#1A1209;--gris:#F2EDE6;--sidebar-w:240px;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html,body{height:100%;}
+    body{font-family:'DM Sans',sans-serif;background:var(--gris);display:flex;height:100vh;overflow:hidden;color:var(--noir);}
+    .sidebar{width:var(--sidebar-w);background:var(--noir);height:100vh;position:fixed;left:0;top:0;display:flex;flex-direction:column;z-index:100;overflow-y:auto;}
+    .sidebar-logo{padding:24px 20px 18px;border-bottom:1px solid rgba(255,255,255,0.08);}
+    .sidebar-logo h1{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;color:white;}
+    .sidebar-logo h1 span{color:var(--or);}
+    .sidebar-logo p{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-top:3px;}
+    .sidebar-user{padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px;}
+    .user-avatar{width:34px;height:34px;background:var(--rouge);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;flex-shrink:0;}
+    .user-info p{font-size:13px;color:white;font-weight:500;}
+    .user-info span{font-size:11px;color:rgba(255,255,255,0.4);}
+    .sidebar-nav{flex:1;padding:10px 0;}
+    .nav-section{padding:8px 20px 3px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.22);}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;color:rgba(255,255,255,0.5);font-size:13px;text-decoration:none;border-left:3px solid transparent;transition:all 0.2s;}
+    .nav-item:hover{background:rgba(255,255,255,0.05);color:white;}
+    .nav-item.active{background:rgba(200,16,46,0.15);color:white;border-left-color:var(--rouge);}
+    .nav-item .icon{font-size:14px;width:18px;text-align:center;}
+    .sidebar-footer{padding:14px 20px;border-top:1px solid rgba(255,255,255,0.08);}
+    .btn-logout{width:100%;padding:9px;background:rgba(200,16,46,0.12);color:rgba(255,255,255,0.55);border:1px solid rgba(200,16,46,0.25);border-radius:8px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+    .btn-logout:hover{background:var(--rouge);color:white;}
+    .main{margin-left:var(--sidebar-w);flex:1;padding:26px 28px;overflow-y:auto;height:100vh;}
+    .page-header{margin-bottom:22px;}
+    .page-header h2{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;}
+    .or-line{display:inline-block;width:26px;height:2px;background:var(--or);border-radius:1px;vertical-align:middle;margin-right:8px;}
+    .card{background:white;border-radius:12px;padding:22px;margin-bottom:18px;}
+    .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+    .card-header h3{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;}
+    .btn-primary{padding:8px 16px;background:var(--rouge);color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+    .btn-primary:hover{background:var(--rouge-fonce);}
+    table{width:100%;border-collapse:collapse;}
+    thead th{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#BBB;font-weight:500;padding:7px 10px;text-align:left;border-bottom:1px solid #F0EBE3;}
+    tbody td{padding:10px;font-size:13px;border-bottom:1px solid #F7F4F0;}
+    tbody tr:last-child td{border-bottom:none;}
+    tbody tr:hover td{background:#FDFAF6;}
+    .badge{font-size:11px;padding:2px 9px;border-radius:20px;font-weight:500;}
+    .badge-rouge{background:rgba(200,16,46,0.1);color:var(--rouge);}
+    .badge-or{background:rgba(212,168,67,0.15);color:#A07820;}
+    .badge-vert{background:rgba(34,197,94,0.1);color:#16A34A;}
+    .badge-bleu{background:rgba(59,130,246,0.1);color:#2563EB;}
+    .badge-gris{background:#F3F4F6;color:#6B7280;}
+    .empty{text-align:center;padding:28px;color:#CCC;font-size:13px;}
+    .btn-action{padding:4px 10px;border-radius:5px;border:none;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;margin-right:3px;}
+    .form-group{margin-bottom:14px;}
+    .form-group label{display:block;font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:#999;margin-bottom:5px;}
+    .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:1.5px solid #E8E0D5;border-radius:7px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--noir);outline:none;background:#FDFAF6;}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--rouge);}
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;}
+    .modal-overlay.show{display:flex;}
+    .modal-box{background:white;border-radius:14px;padding:26px;width:440px;max-width:95vw;max-height:88vh;overflow-y:auto;}
+    .modal-box h3{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-bottom:18px;}
+    .modal-actions{display:flex;gap:8px;margin-top:18px;justify-content:flex-end;}
+    .btn-cancel{padding:8px 16px;background:#F2EDE6;color:#888;border:none;border-radius:7px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+
+
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+    .stat{background:white;border-radius:12px;padding:20px;position:relative;overflow:hidden;}
+    .stat::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+    .stat.r::before{background:var(--rouge);}.stat.o::before{background:var(--or);}.stat.v::before{background:#22C55E;}.stat.b::before{background:#3B82F6;}
+    .stat-icon{font-size:24px;margin-bottom:8px;}
+    .stat-val{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;}
+    .stat-lbl{font-size:10px;color:#999;margin-top:4px;letter-spacing:1px;text-transform:uppercase;}
+    .grid2{display:grid;grid-template-columns:2fr 1fr;gap:16px;}
+
+  </style>
+</head>
+<body>
+<aside class="sidebar"><div class="sidebar-logo"><h1>ARDK<span>.</span></h1><p>Production MES</p></div><div class="sidebar-user"><div class="user-avatar" id="userAvatar">A</div><div class="user-info"><p id="userName">—</p><span id="userRole">—</span></div></div><nav class="sidebar-nav"><div class="nav-section">Principal</div><a class="nav-item active" href="dashboard.html"><span class="icon">📊</span> Dashboard</a><a class="nav-item" href="ordres.html"><span class="icon">⚙️</span> Ordres fab.</a><a class="nav-item" href="articles.html"><span class="icon">📦</span> Articles</a><a class="nav-item" href="gammes.html"><span class="icon">🔧</span> Gammes</a><a class="nav-item" href="nomenclatures.html"><span class="icon">📋</span> Nomenclatures</a><a class="nav-item" href="operations.html"><span class="icon">⚡</span> Opérations</a><div class="nav-section">Gestion</div><a class="nav-item" href="ateliers.html"><span class="icon">🏭</span> Ateliers</a><a class="nav-item" href="artisans.html"><span class="icon">👷</span> Artisans</a><a class="nav-item" href="postes.html"><span class="icon">🖥️</span> Postes travail</a><a class="nav-item" href="calendrier.html"><span class="icon">📅</span> Calendrier</a><a class="nav-item" href="stock.html"><span class="icon">🗃️</span> Stock</a><div class="nav-section">Qualité</div><a class="nav-item" href="qualite.html"><span class="icon">✅</span> Contrôle qualité</a><a class="nav-item" href="declarations.html"><span class="icon">📝</span> Déclarations</a><div class="nav-section">Admin</div><a class="nav-item" href="utilisateurs.html"><span class="icon">👤</span> Utilisateurs</a></nav><div class="sidebar-footer"><button class="btn-logout" onclick="logout()">← Déconnexion</button></div></aside>
+  <main class="main">
+
+    <div class="page-header">
+      <h2><span class="or-line"></span>Tableau de bord<span style="color:var(--rouge)">.</span></h2>
+      <p style="font-size:12px;color:#999;margin-top:3px" id="dateNow"></p>
+    </div>
+    <div class="stats">
+      <div class="stat r"><div class="stat-icon">⚙️</div><div class="stat-val" id="sOF">—</div><div class="stat-lbl">Ordres fab.</div></div>
+      <div class="stat o"><div class="stat-icon">🏭</div><div class="stat-val" id="sAt">—</div><div class="stat-lbl">Ateliers</div></div>
+      <div class="stat v"><div class="stat-icon">📦</div><div class="stat-val" id="sAr">—</div><div class="stat-lbl">Articles</div></div>
+      <div class="stat b"><div class="stat-icon">👷</div><div class="stat-val" id="sAn">—</div><div class="stat-lbl">Artisans</div></div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-header"><h3>Ordres de fabrication</h3><span class="badge badge-rouge" id="ofCount">0</span></div>
+        <div id="ofTable"><div class="empty">Chargement...</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Ateliers</h3></div>
+        <div id="atList"><div class="empty">Chargement...</div></div>
+      </div>
+    </div>
+
+  </main>
+  <script>
+
+    const API='http://localhost:3000/api';
+    const user=JSON.parse(localStorage.getItem('ardk_user')||'null');
+    if(!user||!user.nom){window.location.href='login.html';}
+    document.getElementById('userAvatar').textContent=(user?.nom||'U')[0].toUpperCase();
+    document.getElementById('userName').textContent=user?.nom||'—';
+    document.getElementById('userRole').textContent=user?.role||'—';
+    function logout(){localStorage.removeItem('ardk_user');window.location.href='login.html';}
+    function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+    function fmt(d){return d?new Date(d).toLocaleDateString('fr-FR'):'—';}
+    function statusBadge(s){
+      const m={'PLANIFIE':['badge-gris','Planifié'],'EN_COURS':['badge-or','En cours'],'TERMINE':['badge-vert','Terminé'],'ANNULE':['badge-rouge','Annulé'],
+               'ACCEPTE':['badge-vert','Accepté'],'REFUSE':['badge-rouge','Refusé'],
+               'DISPONIBLE':['badge-vert','Disponible'],'INDISPONIBLE':['badge-rouge','Indisponible'],
+               'ACTIF':['badge-vert','Actif'],'INACTIF':['badge-gris','Inactif'],
+               'PREVUE':['badge-gris','Prévue'],'TERMINEE':['badge-vert','Terminée']};
+      const[c,l]=m[s]||['badge-gris',s||'—'];return`<span class="badge ${c}">${l}</span>`;
+    }
+    function openModal(title){document.getElementById('modal').classList.add('show');document.getElementById('modalTitle').textContent=title||'Formulaire';}
+    function closeModal(){document.getElementById('modal').classList.remove('show');}
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+
+    document.getElementById('dateNow').textContent=new Date().toLocaleDateString('fr-FR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    async function loadAll(){
+      try{
+        const[ofs,ats,arts,ans]=await Promise.all([
+          fetch(`${API}/ordre-fabrication`).then(r=>r.json()),
+          fetch(`${API}/ateliers`).then(r=>r.json()),
+          fetch(`${API}/articles`).then(r=>r.json()),
+          fetch(`${API}/artisans`).then(r=>r.json())
+        ]);
+        document.getElementById('sOF').textContent=ofs.length;
+        document.getElementById('sAt').textContent=ats.length;
+        document.getElementById('sAr').textContent=arts.length;
+        document.getElementById('sAn').textContent=ans.length;
+        document.getElementById('ofCount').textContent=ofs.length+' ordres';
+        document.getElementById('ofTable').innerHTML=!ofs.length?'<div class="empty">Aucun ordre</div>':`
+          <table><thead><tr><th>ID</th><th>Qté</th><th>Statut</th></tr></thead>
+          <tbody>${ofs.slice(0,8).map(o=>`<tr><td><b>#${o.id_of}</b></td><td>${o.quantite_a_produire||'—'}</td><td>${statusBadge(o.statut)}</td></tr>`).join('')}</tbody></table>`;
+        document.getElementById('atList').innerHTML=!ats.length?'<div class="empty">Aucun atelier</div>':
+          ats.slice(0,6).map(a=>`<div style="padding:8px 0;border-bottom:1px solid #F7F4F0;display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:500">${escH(a.nom)}</span><span class="badge badge-vert">Actif</span></div>`).join('');
+      }catch(e){document.getElementById('ofTable').innerHTML='<div class="empty">Erreur serveur</div>';}
+    }
+    loadAll();
+
+  </script>
+</body>
+</html>
